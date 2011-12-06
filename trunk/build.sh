@@ -49,6 +49,11 @@
 #export F77=ifort
 #export FFLAGS="$CFLAGS"
 
+function my_module()
+{
+    
+}
+
 function special_rules()
 {
     return
@@ -57,6 +62,8 @@ function special_rules()
 	echo $arg
     done
 }
+
+
 
 function main() 
 {
