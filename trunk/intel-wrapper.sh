@@ -609,10 +609,10 @@ Pre_defined_no_echo_regular_expressions=(
     "^-print-prog-name="
 )
 
-Pre_defined_gnu_bin_path=$(dirname $(which gcc)) #"/usr/bin"
+Pre_defined_gnu_bin_path=$(dirname $(which gcc)) 
 Pre_defined_gnu_mpi_bin_path="XXX"
-Pre_defined_intel_bin_path=$(dirname $(which icpc)) #"/apps1/intel/bin/intel64"
-Pre_defined_intel_mpi_bin_path="/apps1/openmpi-1.4.3/bin"
+Pre_defined_intel_bin_path=$(dirname $(which icpc))
+Pre_defined_intel_mpi_bin_path=$(dirname $(which mpicc))
 
 #################################
 #                               #
@@ -622,9 +622,17 @@ Pre_defined_intel_mpi_bin_path="/apps1/openmpi-1.4.3/bin"
 
 # print out all the environment variables
 
+if [ "$1" == "--help" ]; then
+    help
+    exit
+fi
+
 if [ "$SPECIAL_RULES_FUNCTION" != "" ]; then
     if [ -e $BUILD_WRAPPER_SCRIPT ]; then
 	export TO_SOURCE_BUILD_WRAPPER_SCRIPT=1
+	if [ "$BUILD_WRAPPER_SCRIPT" == "" ]; then
+	    die "No enviorment variable BUILD_WRAPPER_SCRIPT available"
+	fi
 	source $BUILD_WRAPPER_SCRIPT
 	export TO_SOURCE_BUILD_WRAPPER_SCRIPT=
 	declare -f $SPECIAL_RULES_FUNCTION > /dev/null 2>&1
@@ -641,10 +649,6 @@ if [ "$DEBUG_LOG_FILE" != "" ]; then
     cecho "blue" "$0 $*" >> $DEBUG_LOG_FILE 2>&1
 fi
 
-if [ "$1" == "--help" ]; then
-    help
-    exit
-fi
 
 # get input compiler name
 

@@ -49,11 +49,6 @@
 #export F77=ifort
 #export FFLAGS="$CFLAGS"
 
-function my_module()
-{
-    
-}
-
 function special_rules()
 {
     return
@@ -63,15 +58,15 @@ function special_rules()
     done
 }
 
-
-
 function main() 
 {
     source /etc/profile.d/env-modules.sh
     module purge
 
-    #export BUILD_WRAPPER_SCRIPT=$(abspath.sh $0)
     #export SPECIAL_RULES_FUNCTION=special_rules
+    if [ "$SPECIAL_RULES_FUNCTION" != "" ]; then
+	export BUILD_WRAPPER_SCRIPT=$(abspath.sh $0)
+    fi
 
     export INTEL_BIN_PATH=$(dirname $(which icpc))
     export GNU_BIN_PATH=$(dirname $(which g++))
@@ -79,15 +74,15 @@ function main()
     if [ "$DEBUG_LOG_FILE" != "" ]; then
 	rm -rf $DEBUG_LOG_FILE
     fi
-
+    
     export LD_RUN_PATH=$LD_LIBRARY_PATH
-
+    
     local args=$*
     local arg=
     for arg in $args; do
 	
 	case $arg in
-
+	    
 	    configure|conf)
 		echo " Run configuration ..."
 		./configure --build=x86_64-redhat-linux \
@@ -100,7 +95,7 @@ function main()
 		echo " Run make"
 		eval "$args" 
 		exit
-            ;;
+		;;
 	    
 	    *)
 		echo " Usage: $0 <argument>: configure make"
@@ -121,3 +116,5 @@ if [ "$TO_SOURCE_BUILD_WRAPPER_SCRIPT" == "" ]; then
 else
     unset -f main
 fi
+
+## do not add anything after this line
