@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# $Id$
+
 function absolute_path()
 {
     if [ ! -e $1 ]; then

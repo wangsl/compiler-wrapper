@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# $Id$
+
 #export BUILD_WRAPPER_SCRIPT=
 #export SPECIAL_RULES_FUNCTION=
 
