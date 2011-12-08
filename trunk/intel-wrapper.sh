@@ -86,6 +86,7 @@ function help()
 	DEBUG_LOG_FILE
 	)
 
+    echo " SVN information: \$Id\$"
     echo " Environment variables:"
     echo
     local e=
@@ -609,10 +610,19 @@ Pre_defined_no_echo_regular_expressions=(
     "^-print-prog-name="
 )
 
-Pre_defined_gnu_bin_path=$(dirname $(which gcc)) 
+if [ "$(which gcc 2> /dev/null)" != "" ]; then
+    Pre_defined_gnu_bin_path=$(dirname $(which gcc)) 
+fi
+
+if [ "$(which icc 2> /dev/null)" != "" ]; then
+    Pre_defined_intel_bin_path=$(dirname $(which icc))
+fi
+
+if [ "$(which mpicc 2> /dev/null)" != "" ]; then
+    Pre_defined_intel_mpi_bin_path=$(dirname $(which mpicc))
+fi
+
 Pre_defined_gnu_mpi_bin_path="XXX"
-Pre_defined_intel_bin_path=$(dirname $(which icpc))
-Pre_defined_intel_mpi_bin_path=$(dirname $(which mpicc))
 
 #################################
 #                               #
