@@ -606,23 +606,10 @@ Pre_defined_no_echo_flags=(
     -E -EP -P -C #-help
 )
 
-Pre_defined_no_echo_regular_expressions=(
-    "^-print-prog-name="
-)
-
-if [ "$(which gcc 2> /dev/null)" != "" ]; then
-    Pre_defined_gnu_bin_path=$(dirname $(which gcc)) 
-fi
-
-if [ "$(which icc 2> /dev/null)" != "" ]; then
-    Pre_defined_intel_bin_path=$(dirname $(which icc))
-fi
-
-if [ "$(which mpicc 2> /dev/null)" != "" ]; then
-    Pre_defined_intel_mpi_bin_path=$(dirname $(which mpicc))
-fi
-
-Pre_defined_gnu_mpi_bin_path="XXX"
+Pre_defined_gnu_bin_path="/usr/bin"
+Pre_defined_intel_bin_path=
+Pre_defined_intel_mpi_bin_path=
+Pre_defined_gnu_mpi_bin_path=
 
 #################################
 #                               #
