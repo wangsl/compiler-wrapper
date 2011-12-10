@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh 
 
 # $Id$
 
@@ -52,6 +52,7 @@ function sort_and_uniq()
 function help()
 {
     local environment_variables=(
+	DEBUG_MODE
 	BUILD_WRAPPER_SCRIPT
 	SPECIAL_RULES_FUNCTION
 	SOURCE_CODE_LIST_WITH_INTEL_COMPILERS
@@ -678,6 +679,10 @@ Pre_defined_nvcc_bin_path=
 
 # print out all the environment variables
 
+if [ "$DEBUG_MODE" == "YES" ]; then 
+    set -x
+fi
+
 if [ "$1" == "--help" ]; then
     help
     exit
@@ -760,7 +765,6 @@ if [ $Pre_process -eq 1 ]; then
     command="$Compiler $Compile_flags $Special_macro_arguments $Valid_arguments"
 elif [ $Do_echo -eq 1 ]; then
     command="$Compiler $Link_flags $Compile_flags $Special_macro_arguments $Valid_arguments"
-    #command="$command $Link_flags $Extra_link_flags"
     command="$command $Extra_link_flags"
 else
     command="$Compiler $Special_macro_arguments $Valid_arguments"
