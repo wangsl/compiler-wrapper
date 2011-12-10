@@ -2,6 +2,8 @@
 
 # $Id$
 
+svn_id="$Id$"
+
 alias die='_error_exit_ "Error in file $0 at line $LINENO\n"'
 alias warn='_warn_ "Warn in file $0 at line $LINENO\n"'
 
@@ -81,12 +83,18 @@ function help()
 	GNU_MPI_BIN_PATH
 	DEFAULT_COMPILER
 	NO_ECHO_FLAGS
+	ECHO_BY_DEFAULT
 	REGULAR_EXPRESSIONS_FOR_NO_ECHO
 	STRING_PREPEND_TO_ECHO
 	DEBUG_LOG_FILE
+
+	NVCC_BIN_PATH
+	INCLUDE_FLAGS_FOR_NVCC_CONPILERS
+	INVALID_FLAGS_FOR_NVCC_COMPILERS
+	OPTIMIZATION_FLAGS_FOR_NVCC_COMPILERS
 	)
 
-    echo " SVN information: \$Id\$"
+    echo " SVN information: $svn_id"
     echo " Environment variables:"
     echo
     local e=
@@ -142,9 +150,6 @@ function check_string_and_function_macro()
 	    macro_type=${_macro_non_string}
 	fi
     done
-    
-    #if [ $macro_function_type -ne 0 -a $macro_string_type -ne 0 ]; then
-	#die "$arg is valid for both macro function and macro string"
     
     if [ $macro_type -eq ${_macro_function} ]; then
 	local macro_function=$(echo $arg | sed -e 's/"//g' -e 's#-D#-D\"#')
@@ -224,6 +229,7 @@ function set_compiler_type_for_source_code()
 
     Use_gnu_compiler=0
     Use_intel_compiler=1
+    Use_nvcc_compiler=0
 
     if [ "$DEFAULT_COMPILER" != "" ]; then
 	if [ "$DEFAULT_COMPILER" == "GNU" ]; then
@@ -274,12 +280,47 @@ function _set_compiler_path()
     echo $path | sed -e 's#/*$##'
 }
 
+function _set_nvcc_compiler()
+{
+    if [ "$Input_compiler_name" != "nvcc" ]; then return; fi
+    
+    Use_gnu_compiler=0
+    Use_intel_compiler=0
+    Use_nvcc_compiler=1
+    
+    local compiler_name="nvcc"
+    local path=$(_set_compiler_path $Pre_defined_nvcc_bin_path $NVCC_BIN_PATH)
+    Compiler="$path/$compiler_name"
+    
+    if [ ! -x $Compiler ]; then
+	die " $Compiler is not a valid file"
+    fi
+    
+    _prepend_gnu_bin_path
+}
+
+function _prepend_gnu_bin_path()
+{
+    # For Intel and nvcc compilers, the original GNU compilers should be found first in PATH
+    
+    path=$(_set_compiler_path $Pre_defined_gnu_bin_path $GNU_BIN_PATH)
+    if [ "$path" == "" ]; then
+	die " GNU_BIN_PATH error"
+    elif [ ! -e $path ]; then
+	die " GNU_BIN_PATH error"
+    fi
+    export PATH=.:$path:$PATH
+}
+
 function set_compiler()
 {
+    _set_nvcc_compiler
+    if [ $Use_nvcc_compiler -eq 1 ]; then return; fi
+
     if [ $Use_gnu_compiler -eq 1 -a $Use_intel_compiler -eq 1 ]; then
 	die " Can not set both Use_gnu_compiler and Use_intel_compiler"
     fi
-
+    
     if [ $Use_gnu_compiler -eq 0 -a $Use_intel_compiler -eq 0 ]; then
 	die " No Use_gnu_compiler or Use_intel_compiler has been set"
     fi
@@ -293,8 +334,6 @@ function set_compiler()
 
 	path=$(_set_compiler_path $Pre_defined_gnu_bin_path $GNU_BIN_PATH)
 
-	echo "$Input_compiler_name"
-	
 	case $Input_compiler_name in
 	    
 	    mpi*)
@@ -306,7 +345,7 @@ function set_compiler()
 		fi
 		;;
 
-	    icpc|g++)
+	    icpc|g++|c++)
 		compiler_name=g++
 		;;
 
@@ -318,7 +357,7 @@ function set_compiler()
 		compiler_name=gfortran
 		Fortran_compiler=1
 		;;
-	    
+
 	    *)
 		die " No idea about input compiler: $Input_compiler_name"
 		;;
@@ -339,7 +378,7 @@ function set_compiler()
 		fi
 		;;
 
-	    icpc|g++)
+	    icpc|g++|c++)
 		compiler_name=icpc
 		;;
 
@@ -351,7 +390,7 @@ function set_compiler()
 		compiler_name=ifort
 		Fortran_compiler=1
 		;;
-	    
+
 	    *)
 		die " No idea about input compiler: $Input_compiler_name"
 		;;
@@ -374,13 +413,7 @@ function set_compiler()
 
     # For Intel compilers, the original GNU compilers should be found first in PATH
 
-    path=$(_set_compiler_path $Pre_defined_gnu_bin_path $GNU_BIN_PATH)
-    if [ "$path" == "" ]; then
-	die " GNU_BIN_PATH error"
-    elif [ ! -e $path ]; then
-	die " GNU_BIN_PATH error"
-    fi
-    export PATH=.:$path:$PATH
+    _prepend_gnu_bin_path
 }
 
 function _skip_invalid_flags()
@@ -422,6 +455,11 @@ function skip_invalid_flags()
     if [ $Use_gnu_compiler -eq 1 ]; then
 	Invalid_flags="${Pre_defined_invalid_flags_for_gnu_compilers[*]}"
 	Invalid_flags="$Invalid_flags $INVALID_FLAGS_FOR_GNU_COMPILERS"
+    fi
+
+    if [ $Use_nvcc_compiler -eq 1 ]; then
+	Invalid_flags="${Pre_defined_invalid_flags_for_nvcc_compilers[*]}"
+	Invalid_flags="$Invalid_flags $INVALID_FLAGS_FOR_NVCC_COMPILERS"
     fi
     
     _skip_invalid_flags
@@ -518,6 +556,11 @@ function setup_compile_and_link_flags()
 	fi
 	Compiler_link_flags=$LINK_FLAGS_FOR_INTEL_COMPILERS
     fi
+
+    if [ $Use_nvcc_compiler -eq 1 ]; then
+	Compiler_include_flags=$INCLUDE_FLAGS_FOR_NVCC_COMPILERS
+	Compiler_optimization_flags=$OPTIMIZATION_FLAGS_FOR_NVCC_COMPILERS
+    fi
     
     _setup_compile_and_link_flags
 
@@ -546,7 +589,18 @@ function setup_extra_link_flags()
 function setup_echo_flags()
 {
     Do_echo=1
-    
+
+    if [ "$ECHO_BY_DEFAULT" != "" ]; then
+	if [ "$ECHO_BY_DEFAULT" == "NO" ]; then
+	    Do_echo=0
+	elif [ "$ECHO_BY_DEFAULT" == "YES" ]; then
+	    Do_echo=1
+	else
+	    die "ECHO_BY_DEFAULT can only be 'YES' or 'NO'"
+	fi
+	return
+    fi
+
     if [ $Pre_process -eq 1 ]; then
 	Do_echo=0
 	return
@@ -601,6 +655,8 @@ Pre_defined_invalid_flags_for_gnu_compilers=(
     -openmp -openmp-report
 )
 
+Pre_defined_invalid_flags_for_nvcc_compilers=()
+
 Pre_defined_no_echo_flags=(
     -v -V --version -logo -dumpmachine
     -E -EP -P -C #-help
@@ -610,6 +666,7 @@ Pre_defined_gnu_bin_path="/usr/bin"
 Pre_defined_intel_bin_path=
 Pre_defined_intel_mpi_bin_path=
 Pre_defined_gnu_mpi_bin_path=
+Pre_defined_nvcc_bin_path=
 
 #################################
 #                               #
@@ -670,6 +727,7 @@ unset macro
 
 Use_gnu_compiler=
 Use_intel_compiler=
+Use_nvcc_compiler=
 set_compiler_type_for_source_code
 
 Fortran_compiler=
