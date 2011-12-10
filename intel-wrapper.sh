@@ -94,12 +94,14 @@ function help()
 	OPTIMIZATION_FLAGS_FOR_NVCC_COMPILERS
 	)
 
-    echo " SVN information: $svn_id"
+    echo
+    echo " SVN information: \$Id:" $(echo $svn_id | sed -e s'/://')
+    echo
     echo " Environment variables:"
     echo
     local e=
     for e in ${environment_variables[*]}; do
-	echo "#export $e="
+	echo " #export $e="
     done
     echo
 }
