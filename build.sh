@@ -62,7 +62,8 @@ function main()
 {
     source /etc/profile.d/env-modules.sh
     module purge
-
+    module load intel/11.1.046
+    
     #export SPECIAL_RULES_FUNCTION=special_rules
     if [ "$SPECIAL_RULES_FUNCTION" != "" ]; then
 	export BUILD_WRAPPER_SCRIPT=$(abspath.sh $0)
@@ -70,7 +71,12 @@ function main()
 
     export INTEL_BIN_PATH=$(dirname $(which icpc))
     export GNU_BIN_PATH=$(dirname $(which g++))
-    
+
+    export INVALID_FLAGS_FOR_INTEL_COMPILERS="-O2 -g"
+    export OPTIMIZATION_FLAGS_FOR_INTEL_COMPILERS="-O3 -fPIC -unroll -ip -axP -xP -openmp -vec-report -par-report -openmp-report -Wno-deprecated"
+
+    export LINK_FLAGS_FOR_INTEL_COMPILERS="-shared-intel"
+
     if [ "$DEBUG_LOG_FILE" != "" ]; then
 	rm -rf $DEBUG_LOG_FILE
     fi
