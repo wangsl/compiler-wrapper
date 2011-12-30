@@ -124,11 +124,11 @@ function check_string_and_function_macro()
     local macro_type=0
     
     if [[ $arg =~ ^-D[a-zA-Z0-9_]*\( ]]; then
-	macro_type=${_macro_function}; 
-    elif [[ $arg =~ ^-D[a-zA-Z0-9_]*=\<[a-zA-Z0-9_-./]*\> ]]; then 
-	macro_type=${_macro_non_string}; 
+	macro_type=${_macro_function} 
     elif [[ $arg =~ ^-D[a-zA-Z0-9_]*=\" ]]; then
 	macro_type=${_macro_string};
+    elif [[ $arg =~ ^-D[a-zA-Z0-9_]*= ]]; then
+	macro_type=${_macro_non_string}	
     fi
     
     local function_macros=$(sort_and_uniq $FUNCTION_MACROS)
@@ -153,19 +153,16 @@ function check_string_and_function_macro()
 	    macro_type=${_macro_non_string}
 	fi
     done
-    
+
+    local macro_string=""
     if [ $macro_type -eq ${_macro_function} ]; then
-	local macro_function=$(echo $arg | sed -e 's/"//g' -e 's#-D#-D\"#')
-	echo "$macro_function"'"'
-    elif [ $macro_type -eq ${_macro_non_string} ]; then
-	local macro_string=$(echo $arg | sed -e 's/"//g' -e 's#=#=\"#')
-	echo "$macro_string"'"'
-    elif [ $macro_type -eq ${_macro_string} ]; then
-	local macro_string=$(echo $arg | sed -e 's/"//g' -e 's/=/="\\"/')
-        echo "$macro_string"'\""'
-    else
-	echo ""
+	macro_string=$(echo $arg'"' | sed -e 's#^-D#-D"#')
+    elif [ $macro_type -eq ${_macro_non_string} -o \
+	$macro_type -eq ${_macro_string} ]; then
+        macro_string=$(echo $arg | sed 's#[ "()<>]#\\&#g') 
     fi
+
+    echo "$macro_string"
 }
 
 function _set_compiler_type_for_source_code()
