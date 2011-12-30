@@ -780,9 +780,13 @@ if [ "$DEBUG_LOG_FILE" != "" ]; then
 fi
 
 eval "$command"
+
 if [ $? -ne 0 ]; then
-    cecho "magenta" " $command"
-    die "Compilation failed: $command"
+    if [ $Do_echo -eq 1 ]; then
+	cecho "magenta" " $command"
+	die "Compilation failed: $command"
+    fi
 fi
 
 exit 0
+
