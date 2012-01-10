@@ -78,6 +78,7 @@ function help()
 	STRING_MACROS
 	NON_STRING_MACROS
 	FUNCTION_MACROS
+	INVALID_MACROS
 	INTEL_BIN_PATH
 	GNU_BIN_PATH
 	INTEL_MPI_BIN_PATH
@@ -117,12 +118,23 @@ function check_string_and_function_macro()
 {
     local arg="$*"
 
+# check invalid macros
+    
+    local invalid_macros=$(sort_and_uniq $INVALID_MACROS)
+    local macro=
+    for macro in $invalid_macros; do    
+	if [ "$arg" == "$macro" ]; then
+	    echo ""
+	    return
+	fi
+    done
+
     local _macro_function=1
     local _macro_string=10
     local _macro_non_string=100
 
     local macro_type=0
-    
+
     if [[ $arg =~ ^-D[a-zA-Z0-9_]*\( ]]; then
 	macro_type=${_macro_function} 
     elif [[ $arg =~ ^-D[a-zA-Z0-9_]*=\" ]]; then
@@ -461,6 +473,8 @@ function skip_invalid_flags()
 	Invalid_flags="${Pre_defined_invalid_flags_for_nvcc_compilers[*]}"
 	Invalid_flags="$Invalid_flags $INVALID_FLAGS_FOR_NVCC_COMPILERS"
     fi
+
+    Invalid_flags="${Invalid_flags} $INVALID_MACROS"
     
     _skip_invalid_flags
     
