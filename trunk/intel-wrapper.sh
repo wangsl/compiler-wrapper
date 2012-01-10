@@ -345,15 +345,15 @@ function set_compiler()
 		fi
 		;;
 
-	    icpc|g++|c++)
+	    icpc|g++|c++|pgc++)
 		compiler_name=g++
 		;;
 
-	    icc|gcc|cc)
+	    icc|gcc|cc|pgcc)
 		compiler_name=gcc
 		;;
 
-	    ifort|gfortran|g77|f77)
+	    ifort|gfortran|g77|f77|pgf77|pgf95|pgfortran)
 		compiler_name=gfortran
 		Fortran_compiler=1
 		;;
@@ -378,15 +378,15 @@ function set_compiler()
 		fi
 		;;
 
-	    icpc|g++|c++)
+	    icpc|g++|c++|pgc++)
 		compiler_name=icpc
 		;;
 
-	    icc|gcc|cc)
+	    icc|gcc|cc|pgcc)
 		compiler_name=icc
 		;;
 
-	    ifort|gfortran|g77|f77)
+	    ifort|gfortran|g77|f77|pgf77|pgf95|pgfortran)
 		compiler_name=ifort
 		Fortran_compiler=1
 		;;
