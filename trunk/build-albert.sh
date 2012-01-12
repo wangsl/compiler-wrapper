@@ -57,10 +57,11 @@ function LD_LIBRARY_PATH_to_rpath()
     for lib_path in $ld_lib_paths; do
 	if [ "$lib_path" != "." ]; then
 	    if [ -d $lib_path ]; then
-		echo "-Wl,-rpath=$lib_path"
+		echo -n "-Wl,-rpath=$lib_path "
 	    fi
 	fi
     done
+    echo
 }
 
 function special_rules()
@@ -89,6 +90,7 @@ function main()
     export OPTIMIZATION_FLAGS_FOR_INTEL_COMPILERS="-O3 -fPIC -unroll -ip -axOP -xOP -openmp -vec-report -par-report -openmp-report -Wno-deprecated"
 
     export LINK_FLAGS_FOR_INTEL_COMPILERS="-shared-intel"
+    export EXTRA_LINK_FLAGS="$(LD_LIBRARY_PATH_to_rpath)"
 
     if [ "$DEBUG_LOG_FILE" != "" ]; then
 	rm -rf $DEBUG_LOG_FILE
