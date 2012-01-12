@@ -72,7 +72,7 @@ function main()
     export INTEL_BIN_PATH=$(dirname $(which icpc))
     export GNU_BIN_PATH=$(dirname $(which g++))
 
-    export INVALID_FLAGS_FOR_INTEL_COMPILERS="-O2 -g"
+    export INVALID_FLAGS_FOR_INTEL_COMPILERS="-O0 -O1 -O2 -g -lm"
     export OPTIMIZATION_FLAGS_FOR_INTEL_COMPILERS="-O3 -fPIC -unroll -ip -axP -xP -openmp -vec-report -par-report -openmp-report -Wno-deprecated"
 
     export LINK_FLAGS_FOR_INTEL_COMPILERS="-shared-intel"
@@ -92,7 +92,8 @@ function main()
 	    configure|conf)
 		echo " Run configuration ..."
 		./configure --build=x86_64-redhat-linux \
-		    --prefix=/share/apps/flex/2.5.35/intel
+		    --enable-blast \
+		    --prefix=/share/apps/mcl/11-335/intel
 		shift
 		;;
 	    

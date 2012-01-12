@@ -74,6 +74,7 @@ function help()
 	LINK_FLAGS
 	LINK_FLAGS_FOR_INTEL_COMPILERS
 	LINK_FLAGS_FOR_GNU_COMPILERS
+	EXTRA_LINK_FLAGS
 	EXTRA_OBJECT_FILE_AND_LIBRARY_LIST
 	STRING_MACROS
 	NON_STRING_MACROS
@@ -598,6 +599,8 @@ function setup_extra_link_flags()
 	    Extra_link_flags="$Extra_link_flags $file" 
 	fi
     done
+
+    Extra_link_flags="$Extra_link_flags $EXTRA_LINK_FLAGS" 
 }
 
 function setup_echo_flags()
@@ -658,15 +661,13 @@ Pre_defined_invalid_flags_for_intel_compilers=(
     -Wimplicit -Winvalid-pch -Wnested-externs -Wno-address 
     -Wno-long-long -Wno-pointer-sign -Wno-sign-compare 
     -Wno-unused-parameter -Wparentheses -Wredundant-decls 
-    -Wsign-compare -Wswitch
+    -Wsign-compare -Wswitch -fopenmp
     )
 
 Pre_defined_invalid_flags_for_gnu_compilers=(
     -132 -Zp8 -vec-report -par-report -shared-intel 
-    -xO -axO -xP -axP -ip -xOP -axOP 
-    -xSSE3 -axSSE3 
-    -align -Wno-deprecated
-    -openmp -openmp-report
+    -xO -axO -xP -axP -ip -xOP -axOP -xSSE3 -axSSE3 
+    -align -Wno-deprecated -openmp -openmp-report
 )
 
 Pre_defined_invalid_flags_for_nvcc_compilers=()
