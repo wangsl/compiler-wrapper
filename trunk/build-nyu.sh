@@ -49,6 +49,8 @@
 #export F77=ifort
 #export FFLAGS="$CFLAGS"
 
+alias die='_error_exit_ "Error in file $0 at line $LINENO\n"'
+
 function special_rules()
 {
     return
@@ -79,11 +81,12 @@ function main()
     export INTEL_BIN_PATH=$(dirname $(which icc))
     export GNU_BIN_PATH=$(dirname $(which gcc))
 
-    export INVALID_FLAGS_FOR_GNU_COMPILERS="-O0 -O1 -O2 -g"
+    export INVALID_FLAGS_FOR_GNU_COMPILERS="-O -O0 -O1 -O2 -g"
     export OPTIMIZATION_FLAGS_FOR_GNU_COMPILERS="-O3 -fPIC"
 
-    export INVALID_FLAGS_FOR_INTEL_COMPILERS="-O0 -O1 -O2 -g -lm"
+    export INVALID_FLAGS_FOR_INTEL_COMPILERS="-O -O0 -O1 -O2 -g -lm"
     export OPTIMIZATION_FLAGS_FOR_INTEL_COMPILERS="-O3 -fPIC -unroll -ip -axP -xP -openmp -vec-report -par-report -openmp-report -Wno-deprecated"
+    export OPTIMIZATION_FLAGS_FOR_INTEL_FORTRAN_COMPILERS="-O3 -fPIC -unroll -ip -axP -xP -openmp -vec-report -par-report -openmp-report"
 
     export LINK_FLAGS_FOR_INTEL_COMPILERS="-shared-intel"
     export EXTRA_LINK_FLAGS="$(LD_LIBRARY_PATH_to_rpath)"
@@ -115,8 +118,7 @@ function main()
 		;;
 	    
 	    *)
-		echo " Usage: $0 <argument>: configure make"
-		exit 1
+		die " Usage: $0 <argument>: configure make"
 		;;
 	esac
 

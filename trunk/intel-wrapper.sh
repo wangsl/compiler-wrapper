@@ -4,6 +4,9 @@
 
 svn_id="$Id$"
 
+alias die='_error_exit_ "Error in file $0 at line $LINENO\n"'
+alias warn='_warn_ "Warn in file $0 at line $LINENO\n"'
+
 # to print out environment variables
 
 function help()
@@ -649,7 +652,6 @@ Pre_defined_nvcc_bin_path=
 #         main part             #
 #                               #
 #################################
-
 
 util=$HOME/bin/intel/util.sh
 if [ -e $util ]; then

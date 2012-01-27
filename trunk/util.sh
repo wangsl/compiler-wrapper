@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $Id:$
+# $Id$
 
 function prepend_to_env_variable()
 {
@@ -42,9 +42,6 @@ function LD_LIBRARY_PATH_to_rpath()
     done
     echo
 }
-
-alias die='_error_exit_ "Error in file $0 at line $LINENO\n"'
-alias warn='_warn_ "Warn in file $0 at line $LINENO\n"'
 
 function cecho()
 {
