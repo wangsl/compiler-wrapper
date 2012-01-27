@@ -49,21 +49,6 @@
 #export F77=ifort
 #export FFLAGS="$CFLAGS"
 
-function LD_LIBRARY_PATH_to_rpath()
-{
-    local ld_lib_paths=$(echo $LD_LIBRARY_PATH | sed -e "s/:/\n/g" | sort -u)
-    
-    local lib_path=
-    for lib_path in $ld_lib_paths; do
-	if [ "$lib_path" != "." ]; then
-	    if [ -d $lib_path ]; then
-		echo -n "-Wl,-rpath=$lib_path "
-	    fi
-	fi
-    done
-    echo
-}
-
 function special_rules()
 {
     return
@@ -80,6 +65,11 @@ function main()
     source /etc/profile.d/env-modules.sh
     module purge
     module load intel/11.1.046
+    
+    local util=$HOME/bin/intel/util.sh
+    if [ -e $util ]; then
+	source $util
+    fi
     
     export SPECIAL_RULES_FUNCTION=special_rules
     if [ "$SPECIAL_RULES_FUNCTION" != "" ]; then

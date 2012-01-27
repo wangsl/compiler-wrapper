@@ -4,49 +4,6 @@
 
 svn_id="$Id$"
 
-alias die='_error_exit_ "Error in file $0 at line $LINENO\n"'
-alias warn='_warn_ "Warn in file $0 at line $LINENO\n"'
-
-function cecho()
-{
-    local black='\E[30;47m'
-    local red='\E[31;47m'
-    local green='\E[32;47m'
-    local yellow='\E[33;47m'
-    local blue='\E[34;47m'
-    local magenta='\E[35;47m'
-    local cyan='\E[36;47m'
-    local white='\E[37;47m'
-    
-    local color=$1
-    local message="$2"
-    
-    local command="echo -en \$$color\$message"
-    eval $command
-    tput sgr0
-    echo
-}
-
-function _error_exit_()
-{
-    cecho "red" "$*"
-    echo
-    exit 1
-}
-
-function _warn_()
-{
-    cecho "cyan" "$*"
-    echo
-}
-
-function sort_and_uniq()
-{
-    if [ "$*" != "" ]; then 
-	echo "$*" | sed -e 's/ /\n/g' | sort -u
-    fi
-}
-
 # to print out environment variables
 
 function help()
@@ -661,7 +618,7 @@ Pre_defined_invalid_flags_for_intel_compilers=(
     -Wimplicit -Winvalid-pch -Wnested-externs -Wno-address 
     -Wno-long-long -Wno-pointer-sign -Wno-sign-compare 
     -Wno-unused-parameter -Wparentheses -Wredundant-decls 
-    -Wsign-compare -Wswitch -fopenmp
+    -Wsign-compare -Wswitch -fopenmp -ffast-math
     )
 
 Pre_defined_invalid_flags_for_gnu_compilers=(
@@ -673,7 +630,7 @@ Pre_defined_invalid_flags_for_gnu_compilers=(
 Pre_defined_invalid_flags_for_nvcc_compilers=()
 
 Pre_defined_no_echo_flags=(
-    -v -V --version -logo -dumpmachine
+    -v -V --version -logo -dumpmachine -dumpversion
     -E -EP -P -C #-help
 )
 
@@ -692,6 +649,15 @@ Pre_defined_nvcc_bin_path=
 #         main part             #
 #                               #
 #################################
+
+
+util=$HOME/bin/intel/util.sh
+if [ -e $util ]; then
+    source $util
+else
+    echo " $util does not exist"
+    exit 1
+fi
 
 # print out all the environment variables
 
