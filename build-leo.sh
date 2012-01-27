@@ -49,6 +49,8 @@
 #export F77=ifort
 #export FFLAGS="$CFLAGS"
 
+alias die='_error_exit_ "Error in file $0 at line $LINENO\n"'
+
 function LD_LIBRARY_PATH_to_rpath()
 {
     local ld_lib_paths=$(echo $LD_LIBRARY_PATH | sed -e "s/:/\n/g" | sort -u)
@@ -125,8 +127,7 @@ function main()
 		;;
 	    
 	    *)
-		echo " Usage: $0 <argument>: configure make"
-		exit 1
+		die " Usage: $0 <argument>: configure make"
 		;;
 	esac
 
