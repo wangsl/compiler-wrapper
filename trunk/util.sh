@@ -10,7 +10,7 @@ function prepend_to_env_variable()
     if [[ $# -eq 3 ]]; then
 	local seperate_field=$3
     fi
-    local cmd="export $env_variable=\"${new_arguments}${seperate_field}\$${env_variable}${seperate_field}\""
+    local cmd="export $env_variable=\"${new_arguments}${seperate_field}\$${env_variable}\""
     eval "$cmd"
     return
 }
@@ -23,7 +23,7 @@ function append_to_env_variable()
     if [[ $# -eq 3 ]]; then
 	local seperate_field=$3
     fi
-    local cmd="export $env_variable=\"\$${env_variable}${seperate_field}${seperate_field}${new_arguments}\""
+    local cmd="export $env_variable=\"\$${env_variable}${seperate_field}${new_arguments}\""
     eval "$cmd"
     return
 }
