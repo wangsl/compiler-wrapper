@@ -326,7 +326,7 @@ function set_compiler()
 		compiler_name=gcc
 		;;
 
-	    ifort|gfortran|g77|f77|pgf77|pgf95|pgfortran)
+	    ifort|gfortran|g77|f77|pgf77|pgf90|pgf95|pgfortran)
 		compiler_name=gfortran
 		Fortran_compiler=1
 		;;
@@ -359,7 +359,7 @@ function set_compiler()
 		compiler_name=icc
 		;;
 
-	    ifort|gfortran|g77|f77|pgf77|pgf95|pgfortran)
+	    ifort|gfortran|g77|f77|pgf77|pgf90|pgf95|pgfortran)
 		compiler_name=ifort
 		Fortran_compiler=1
 		;;
