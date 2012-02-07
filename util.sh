@@ -30,7 +30,7 @@ function append_to_env_variable()
 
 function LD_LIBRARY_PATH_to_rpath()
 {
-    local ld_lib_paths=$(echo $LD_LIBRARY_PATH | sed -e "s/:/\n/g" | sort -u)
+    local ld_lib_paths=$(echo $LD_LIBRARY_PATH | sed -e "s/:/\n/g" | /bin/sort -u)
     
     local lib_path=
     for lib_path in $ld_lib_paths; do
@@ -79,6 +79,6 @@ function _warn_()
 function sort_and_uniq()
 {
     if [ "$*" != "" ]; then 
-	echo "$*" | sed -e 's/ /\n/g' | sort -u
+	echo "$*" | sed -e 's/ /\n/g' | /bin/sort -u
     fi
 }
