@@ -689,9 +689,11 @@ if [ "$SPECIAL_RULES_FUNCTION" != "" ]; then
 fi
 
 if [ "$DEBUG_LOG_FILE" != "" ]; then
-    echo >> $DEBUG_LOG_FILE
-    echo "-------" >> $DEBUG_LOG_FILE 2>&1
-    cecho "blue" "$0 $*" >> $DEBUG_LOG_FILE 2>&1
+    {
+	echo 
+	echo "-------" 
+	cecho "blue" "$0 $*"
+    } >> $DEBUG_LOG_FILE 2>&1
 fi
 
 
