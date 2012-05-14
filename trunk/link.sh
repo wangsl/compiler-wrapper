@@ -6,5 +6,6 @@ compilers="cc c++ f77 g++ g77 gcc gfortran icc icpc ifort mpic++ mpicc mpiCC mpi
 
 for comp in $compilers;  do
     echo $comp
+    rm -rf $comp
     ln -s intel-wrapper.sh $comp
 done
