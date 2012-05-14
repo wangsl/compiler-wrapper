@@ -633,8 +633,8 @@ Pre_defined_invalid_flags_for_gnu_compilers=(
 Pre_defined_invalid_flags_for_nvcc_compilers=()
 
 Pre_defined_no_echo_flags=(
-    -v -V --version -logo -dumpmachine -dumpversion
-    -E -EP -P -C #-help
+    -V --version -logo -dumpmachine -dumpversion
+    -E -EP -P -C #-help -v
 )
 
 Pre_defined_no_echo_regular_expressions=(
