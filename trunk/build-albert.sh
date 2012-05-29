@@ -64,6 +64,7 @@ function main()
 {
     source /apps1/modules/init/sh
     module purge
+    export LD_LIBRARY_PATH=
     module load intel/11.1.072
 
     local util=$HOME/bin/intel/util.sh
