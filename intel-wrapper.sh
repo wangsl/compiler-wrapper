@@ -766,9 +766,10 @@ fi
 
 if [ "$DEBUG_LOG_FILE" != "" ]; then
     cecho "green" "$command" >> $DEBUG_LOG_FILE 2>&1
+    eval "$command" 2>&1 | tee -a $DEBUG_LOG_FILE
+else
+    eval "$command"
 fi
-
-eval "$command"
 
 if [ $? -ne 0 ]; then
     if [ $Do_echo -eq 1 ]; then
