@@ -62,6 +62,10 @@ function special_rules()
 
 function main() 
 {
+    source /apps1/modules/init/sh
+    module purge
+    module load intel/11.1.072
+
     local util=$HOME/bin/intel/util.sh
     if [ -e $util ]; then
 	source $util
