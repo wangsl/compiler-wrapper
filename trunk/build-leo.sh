@@ -62,10 +62,9 @@ function special_rules()
 
 function main() 
 {
-    export LD_LIBRARY_PATH=
-
     source /usr/share/modules/init/sh
     module purge
+    export LD_LIBRARY_PATH=
     module load intel/2011.7.256
 
     local util=$HOME/bin/intel/util.sh
@@ -75,7 +74,7 @@ function main()
     
     export SPECIAL_RULES_FUNCTION=special_rules
     if [ "$SPECIAL_RULES_FUNCTION" != "" ]; then
-	export BUILD_WRAPPER_SCRIPT=$(abspath.sh $0)
+	export BUILD_WRAPPER_SCRIPT=$(~shwang/bin/intel/abspath.sh $0)
     fi
 
     export INTEL_BIN_PATH=$(dirname $(which icc))
@@ -98,8 +97,8 @@ function main()
 
     export PATH=.:$HOME/bin/intel:$PATH
 
-    local prefix=/home/shwang/flex-2.5.35/local
-    local prefix=/share/apps/flex/2.5.35/intel
+    #local prefix=/home/shwang/flex-2.5.35/local
+    local prefix=/opt/flex/2.5.35/intel
     
     local args=$*
     local arg=
