@@ -51,21 +51,6 @@
 
 alias die='_error_exit_ "Error in file $0 at line $LINENO\n"'
 
-function LD_LIBRARY_PATH_to_rpath()
-{
-    local ld_lib_paths=$(echo $LD_LIBRARY_PATH | sed -e "s/:/\n/g" | sort -u)
-    
-    local lib_path=
-    for lib_path in $ld_lib_paths; do
-	if [ "$lib_path" != "." ]; then
-	    if [ -d $lib_path ]; then
-		echo -n "-Wl,-rpath=$lib_path "
-	    fi
-	fi
-    done
-    echo
-}
-
 function special_rules()
 {
     return
@@ -82,6 +67,11 @@ function main()
     source /usr/share/modules/init/sh
     module purge
     module load intel/2011.7.256
+
+    local util=$HOME/bin/intel/util.sh
+    if [ -e $util ]; then
+	source $util
+    fi
     
     export SPECIAL_RULES_FUNCTION=special_rules
     if [ "$SPECIAL_RULES_FUNCTION" != "" ]; then
@@ -91,10 +81,10 @@ function main()
     export INTEL_BIN_PATH=$(dirname $(which icc))
     export GNU_BIN_PATH=$(dirname $(which gcc))
 
-    export INVALID_FLAGS_FOR_GNU_COMPILERS="-O0 -O1 -O2 -g"
+    export INVALID_FLAGS_FOR_GNU_COMPILERS="-O -O0 -O1 -O2 -g"
     export OPTIMIZATION_FLAGS_FOR_GNU_COMPILERS="-O3 -fPIC"
 
-    export INVALID_FLAGS_FOR_INTEL_COMPILERS="-O0 -O1 -O2 -g -lm"
+    export INVALID_FLAGS_FOR_INTEL_COMPILERS="-O -O0 -O1 -O2 -g -lm"
     export OPTIMIZATION_FLAGS_FOR_INTEL_COMPILERS="-O3 -fPIC -unroll -ip -xSSE3 -axSSE3 -openmp -vec-report -par-report -openmp-report -Wno-deprecated"
 
     export LINK_FLAGS_FOR_INTEL_COMPILERS="-shared-intel"
@@ -105,6 +95,11 @@ function main()
     fi
     
     export LD_RUN_PATH=$LD_LIBRARY_PATH
+
+    export PATH=.:$HOME/bin/intel:$PATH
+
+    local prefix=/home/shwang/flex-2.5.35/local
+    local prefix=/share/apps/flex/2.5.35/intel
     
     local args=$*
     local arg=
@@ -115,7 +110,7 @@ function main()
 	    configure|conf)
 		echo " Run configuration ..."
 		./configure --build=x86_64-redhat-linux \
-		    --prefix=/share/apps/flex/2.5.35/intel
+		    --prefix=$prefix
 		shift
 		;;
 	    
