@@ -62,9 +62,7 @@ function special_rules()
 
 function main() 
 {
-    export LD_LIBRARY_PATH=
-    
-    source /etc/profile.d/env-modules.sh
+    #source /etc/profile.d/env-modules.sh
     module purge
     export LD_LIBRARY_PATH=
     module load intel/12.1.3
