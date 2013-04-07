@@ -4,6 +4,8 @@
 
 svn_id="$Id$"
 
+shopt -s expand_aliases
+
 alias die='_error_exit_ "Error in file $0 at line $LINENO\n"'
 alias warn='_warn_ "Warn in file $0 at line $LINENO\n"'
 

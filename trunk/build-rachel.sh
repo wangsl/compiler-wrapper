@@ -106,7 +106,7 @@ function main()
 	    
 	    configure|conf)
 		echo " Run configuration ..."
-		./configure --build=centos \
+		./configure --build=x86_64-redhat-linux \
 		    --prefix=/apps3/centos-6.3/modules
 		shift
 		;;
