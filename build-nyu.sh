@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # $Id$
 
@@ -9,10 +9,10 @@
 #export SOURCE_CODE_LIST_WITH_GNU_COMPILERS=
 #export REGULAR_EXPRESSION_LIST_FOR_SOURCE_CODE_WITH_INTEL_COMPILERS=
 #export REGULAR_EXPRESSION_LIST_FOR_SOURCE_CODE_WITH_GNU_COMPILERS=
-#export INVALID_FLAGS_FOR_INTEL_COMPILERS="-O2 -g"
+#export INVALID_FLAGS_FOR_INTEL_COMPILERS=
 #export INVALID_FLAGS_FOR_GNU_COMPILERS=
 #export OPTIMIZATION_FLAGS=
-#export OPTIMIZATION_FLAGS_FOR_INTEL_COMPILERS="-O3 -fPIC -unroll -ip -axP -xP -openmp -vec-report -par-report -openmp-report -Wno-deprecated -shared-intel -Wp64"
+#export OPTIMIZATION_FLAGS_FOR_INTEL_COMPILERS=
 #export OPTIMIZATION_FLAGS_FOR_INTEL_FORTRAN_COMPILERS=
 #export OPTIMIZATION_FLAGS_FOR_GNU_COMPILERS=
 #export OPTIMIZATION_FLAGS_FOR_GNU_FORTRAN_COMPILERS=
@@ -36,7 +36,7 @@
 #export DEBUG_LOG_FILE=tmp.log
 
 #export CC=icc
-#export CFLAGS="-O3 -fPIC -unroll -ip -axP -xP -openmp -vec-report -par-report -openmp-report -Wno-deprecated"
+#export CFLAGS=
 #export LDFLAGS="-shared-intel $CFLAGS"
 #export LIBS=
 #export CPPFLAGS=
@@ -62,12 +62,11 @@ function special_rules()
 
 function main() 
 {
-    export LD_LIBRARY_PATH=
-    
     source /etc/profile.d/env-modules.sh
     module purge
+    export LD_LIBRARY_PATH=
     module load intel/11.1.046
-    
+
     local util=$HOME/bin/intel/util.sh
     if [ -e $util ]; then
 	source $util
@@ -80,13 +79,20 @@ function main()
 
     export INTEL_BIN_PATH=$(dirname $(which icc))
     export GNU_BIN_PATH=$(dirname $(which gcc))
+    export INTEL_MPI_BIN_PATH=$(dirname $(which mpicc))
 
     export INVALID_FLAGS_FOR_GNU_COMPILERS="-O -O0 -O1 -O2 -g"
-    export OPTIMIZATION_FLAGS_FOR_GNU_COMPILERS="-O3 -fPIC"
+    export OPTIMIZATION_FLAGS_FOR_GNU_COMPILERS="-O3 -fPIC -fopenmp"
 
     export INVALID_FLAGS_FOR_INTEL_COMPILERS="-O -O0 -O1 -O2 -g -lm"
     export OPTIMIZATION_FLAGS_FOR_INTEL_COMPILERS="-O3 -fPIC -unroll -ip -axP -xP -openmp -vec-report -par-report -openmp-report -Wno-deprecated"
     export OPTIMIZATION_FLAGS_FOR_INTEL_FORTRAN_COMPILERS="-O3 -fPIC -unroll -ip -axP -xP -openmp -vec-report -par-report -openmp-report"
+
+    export CPPFLAGS=$(for inc in $(env | grep _INC= | cut -d= -f2); do echo '-I'$inc; done | xargs)
+    export LDFLAGS=$(for lib in $(env | grep _LIB= | cut -d= -f2); do echo '-L'$lib; done | xargs)
+    
+    #prepend_to_env_variable INCLUDE_FLAGS "$CPPFLAGS"
+    #prepend_to_env_variable LINK_FLAGS "$LDFLAGS"
 
     export LINK_FLAGS_FOR_INTEL_COMPILERS="-shared-intel"
     export EXTRA_LINK_FLAGS="$(LD_LIBRARY_PATH_to_rpath)"
@@ -97,6 +103,8 @@ function main()
     
     export LD_RUN_PATH=$LD_LIBRARY_PATH
     
+    local prefix=/share/apps/breakdancer/1.3.6/intel
+    
     local args=$*
     local arg=
     for arg in $args; do
@@ -105,10 +113,22 @@ function main()
 	    
 	    configure|conf)
 		echo " Run configuration ..."
+		export PATH=.:$HOME/bin/intel:$PATH
 		./configure --build=x86_64-redhat-linux \
-		    --prefix=/share/apps/flex/2.5.35/intel
-		shift
+		    --prefix=$prefix
 		;;
+	    
+	    cmake)
+		module load cmake/intel/2.8.8
+		export PATH=.:$HOME/bin/intel:$PATH
+		
+                export CC=icc
+                export CXX=icpc
+		cmake \
+		    -DCMAKE_BUILD_TYPE=release \
+		    -DCMAKE_INSTALL_PREFIX:PATH=$prefix \
+		    ../breakdancer
+                ;;
 	    
 	    make)
 		export PATH=.:$HOME/bin/intel:$PATH

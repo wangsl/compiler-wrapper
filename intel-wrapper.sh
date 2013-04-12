@@ -755,7 +755,9 @@ elif [ $Do_echo -eq 1 ]; then
     command="$Compiler $Link_flags $Compile_flags $Special_macro_arguments $Valid_arguments"
     command="$command $Extra_link_flags"
 else
-    command="$Compiler $Special_macro_arguments $Valid_arguments"
+    #command="$Compiler $Special_macro_arguments $Valid_arguments"
+    command="$Compiler $Link_flags $Compile_flags $Special_macro_arguments $Valid_arguments"
+    command="$command $Extra_link_flags"
 fi
 
 if [ $Do_echo -eq 1 ]; then
