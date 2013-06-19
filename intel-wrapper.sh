@@ -328,7 +328,7 @@ function set_compiler()
 		compiler_name=gcc
 		;;
 
-	    ifort|gfortran|g77|f77|pgf77|pgf90|pgf95|pgfortran)
+	    ifort|gfortran|g77|f77|f95|pgf77|pgf90|pgf95|pgfortran)
 		compiler_name=gfortran
 		Fortran_compiler=1
 		;;
@@ -361,7 +361,7 @@ function set_compiler()
 		compiler_name=icc
 		;;
 
-	    ifort|gfortran|g77|f77|pgf77|pgf90|pgf95|pgfortran)
+	    ifort|gfortran|g77|f77|f95|pgf77|pgf90|pgf95|pgfortran)
 		compiler_name=ifort
 		Fortran_compiler=1
 		;;
@@ -458,7 +458,7 @@ function check_compile_or_link()
 	    compile=1;
 	elif [ "$arg" == "-o" ]; then 
 	    link=1; 
-	elif [ "$arg" == "-M" -o "$arg" == "-MM" ]; then
+	elif [ "$arg" == "-M" -o "$arg" == "-MM" -o "$arg" == "-E" ]; then
 	    pre_process=1
 	fi
     done
@@ -694,7 +694,7 @@ if [ "$DEBUG_LOG_FILE" != "" ]; then
     {
 	echo 
 	echo "-------" 
-	cecho "blue" "$0 $*"
+	cecho "green" "$0 $*"
     } >> $DEBUG_LOG_FILE 2>&1
 fi
 
@@ -769,7 +769,7 @@ if [ $Do_echo -eq 1 ]; then
 fi
 
 if [ "$DEBUG_LOG_FILE" != "" ]; then
-    cecho "green" "$command" >> $DEBUG_LOG_FILE 2>&1
+    cecho "blue" "$command" >> $DEBUG_LOG_FILE 2>&1
     eval "$command" 2>&1 | tee -a $DEBUG_LOG_FILE
 else
     eval "$command"
