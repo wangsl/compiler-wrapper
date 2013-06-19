@@ -79,7 +79,7 @@ function main()
 
     export INTEL_BIN_PATH=$(dirname $(which icc))
     export GNU_BIN_PATH=$(dirname $(which gcc))
-    export INTEL_MPI_BIN_PATH=$(dirname $(which mpicc))
+    #export INTEL_MPI_BIN_PATH=$(dirname $(which mpicc))
 
     export INVALID_FLAGS_FOR_GNU_COMPILERS="-O -O0 -O1 -O2 -g"
     export OPTIMIZATION_FLAGS_FOR_GNU_COMPILERS="-O3 -fPIC -fopenmp"
