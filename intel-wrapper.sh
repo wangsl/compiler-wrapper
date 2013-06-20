@@ -695,6 +695,7 @@ if [ "$DEBUG_LOG_FILE" != "" ]; then
 	echo 
 	echo "-------" 
 	cecho "green" "$0 $*"
+	#echo "$0 $*"
     } >> $DEBUG_LOG_FILE 2>&1
 fi
 
