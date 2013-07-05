@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# $Id: build-albert.sh 30 2012-05-29 15:39:42Z wangsl2001@gmail.com $
+# $Id$
 
 #export BUILD_WRAPPER_SCRIPT=
 #export SPECIAL_RULES_FUNCTION=
