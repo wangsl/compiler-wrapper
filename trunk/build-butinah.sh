@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $Id: build-nyu.sh 23 2012-01-27 20:44:24Z wangsl2001@gmail.com $
+# $Id$
 
 #export BUILD_WRAPPER_SCRIPT=
 #export SPECIAL_RULES_FUNCTION=
