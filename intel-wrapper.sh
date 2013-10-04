@@ -52,6 +52,7 @@ function help()
 	REGULAR_EXPRESSIONS_FOR_NO_ECHO
 	STRING_PREPEND_TO_ECHO
 	DEBUG_LOG_FILE
+	ECHO_TO_LOG_FILE_AND_STDOUT
 
 	NVCC_BIN_PATH
 	INCLUDE_FLAGS_FOR_NVCC_CONPILERS
@@ -655,6 +656,8 @@ Pre_defined_nvcc_bin_path=
 #                               #
 #################################
 
+#export ECHO_TO_LOG_FILE_AND_STDOUT="YES"
+
 util=$HOME/bin/intel/util.sh
 if [ -e $util ]; then
     source $util
@@ -771,7 +774,11 @@ fi
 
 if [ "$DEBUG_LOG_FILE" != "" ]; then
     cecho "blue" "$command" >> $DEBUG_LOG_FILE 2>&1
-    eval "$command" 2>&1 | tee -a $DEBUG_LOG_FILE
+    if [ "$ECHO_TO_LOG_FILE_AND_STDOUT" == "NO" ]; then
+	eval "$command" >> $DEBUG_LOG_FILE 2>&1
+    else
+	eval "$command" 2>&1 | tee -a $DEBUG_LOG_FILE 
+    fi
 else
     eval "$command"
 fi
