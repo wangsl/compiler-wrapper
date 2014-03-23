@@ -677,6 +677,12 @@ if [ "$1" == "--help" ]; then
     exit
 fi
 
+# get input compiler name
+
+Input_compiler_name=
+set_input_compiler_name "$0"
+export COMPILER_NAME=$Input_compiler_name
+
 if [ "$SPECIAL_RULES_FUNCTION" != "" ]; then
     if [ -e $BUILD_WRAPPER_SCRIPT ]; then
 	export TO_SOURCE_BUILD_WRAPPER_SCRIPT=1
@@ -704,9 +710,8 @@ fi
 
 
 # get input compiler name
-
-Input_compiler_name=
-set_input_compiler_name "$0"
+#Input_compiler_name=
+#set_input_compiler_name "$0"
 
 # seperate macro for string and functions (special macros)
 

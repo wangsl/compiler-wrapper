@@ -62,21 +62,10 @@ function special_rules()
 
 function main() 
 {
-    #source /etc/profile.d/env-modules.sh
-    #module purge
-    #export LD_LIBRARY_PATH=
-    #module load intel/11.1.046
-
-    #source /state/partition1/apps/intel/14.0.2/composer_xe_2013_sp1/bin/compilervars.sh intel64
-
-    if [ "$(hostname -s)" == "compute-0-1" ]; then
-	source /usr/share/Modules/3.2.10/init/sh
-	export MODULEPATH=/state/partition1/apps/modulefiles
-	module purge
-	export LD_LIBRARY_PATH=
-	module load intel/14.0.2
-    fi
-
+    module purge
+    export LD_LIBRARY_PATH=
+    module load intel/14.0.2
+    
     local util=$HOME/bin/intel/util.sh
     if [ -e $util ]; then
 	source $util
@@ -84,28 +73,31 @@ function main()
     
     export SPECIAL_RULES_FUNCTION=special_rules
     if [ "$SPECIAL_RULES_FUNCTION" != "" ]; then
-	export BUILD_WRAPPER_SCRIPT=$(abspath.sh $0)
+	export BUILD_WRAPPER_SCRIPT=$(readlink -e $0)
     fi
-
-    export INTEL_BIN_PATH=$(dirname $(which icc))
+    
     export GNU_BIN_PATH=$(dirname $(which gcc))
+    export INTEL_BIN_PATH=$(dirname $(which icc))
     #export INTEL_MPI_BIN_PATH=$(dirname $(which mpicc))
-
+    
     export INVALID_FLAGS_FOR_GNU_COMPILERS="-O -O0 -O1 -O2 -g"
-    export OPTIMIZATION_FLAGS_FOR_GNU_COMPILERS="-O3 -fPIC -fopenmp"
-
+    export OPTIMIZATION_FLAGS_FOR_GNU_COMPILERS="-O3 -fPIC -fopenmp -msse4.2"
+    
     export INVALID_FLAGS_FOR_INTEL_COMPILERS="-O -O0 -O1 -O2 -g -lm"
-    export OPTIMIZATION_FLAGS_FOR_INTEL_COMPILERS="-O3 -fPIC -unroll -ip -mavx -openmp -vec-report -par-report -openmp-report -Wno-deprecated"
-    export OPTIMIZATION_FLAGS_FOR_INTEL_FORTRAN_COMPILERS="-O3 -fPIC -unroll -ip -mavx -openmp -vec-report -par-report -openmp-report"
-
+    export OPTIMIZATION_FLAGS_FOR_INTEL_COMPILERS="-O3 -fPIC -unroll -ip -axavx -xsse4.2 -openmp -vec-report -par-report -openmp-report -Wno-deprecated"
+    export OPTIMIZATION_FLAGS_FOR_INTEL_FORTRAN_COMPILERS="-O3 -fPIC -unroll -ip -axavx -xsse4.2 -openmp -vec-report -par-report -openmp-report"
+    
     #export CPPFLAGS=$(for inc in $(env | grep _INC= | cut -d= -f2); do echo '-I'$inc; done | xargs)
     #export LDFLAGS=$(for lib in $(env | grep _LIB= | cut -d= -f2); do echo '-L'$lib; done | xargs)
     
     #prepend_to_env_variable INCLUDE_FLAGS "$CPPFLAGS"
     #prepend_to_env_variable LINK_FLAGS "$LDFLAGS"
-
+    
     export LINK_FLAGS_FOR_INTEL_COMPILERS="-shared-intel"
     export EXTRA_LINK_FLAGS="$(LD_LIBRARY_PATH_to_rpath)"
+
+    export INCLUDE_FLAGS=
+    export LINK_FLAGS=
 
     if [ "$DEBUG_LOG_FILE" != "" ]; then
 	rm -rf $DEBUG_LOG_FILE
@@ -113,7 +105,13 @@ function main()
     
     export LD_RUN_PATH=$LD_LIBRARY_PATH
     
-    local prefix=/share/apps/breakdancer/1.3.6/intel
+    local prefix=
+    if [ "$prefix" == "" -a -d ../local ]; then
+        prefix=$(readlink -e ../local)
+    fi
+    if [ "$prefix" == "" ]; then
+        die "$0: no prefix defined"
+    fi
     
     local args=$*
     local arg=
@@ -123,19 +121,31 @@ function main()
 	    
 	    configure|conf)
 		echo " Run configuration ..."
-		export PATH=.:$HOME/bin/intel:$PATH
-		./configure --build=x86_64-redhat-linux \
+		#export PATH=.:$HOME/bin/intel:$PATH
+		
+		if [ "$DEFAULT_COMPILER" != "GNU" ]; then
+		    export CC=icc
+                    export CXX=icpc
+                    export F77=ifort
+                    export FC=ifort
+		fi
+		
+		./configure --build=x86_64-centos-linux \
 		    --prefix=$prefix
 		;;
 	    
 	    cmake)
-		module load cmake/intel/2.8.8
+		module load cmake/intel/2.8.12.2
 		export PATH=.:$HOME/bin/intel:$PATH
 		
                 export CC=icc
                 export CXX=icpc
 		cmake \
 		    -DCMAKE_BUILD_TYPE=release \
+		    -DBUILD_STATIC_LIBS::BOOL=ON \
+                    -DBUILD_SHARED_LIBS::BOOL=ON \
+                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+                    -DCMAKE_SKIP_RPATH:BOOL=ON \
 		    -DCMAKE_INSTALL_PREFIX:PATH=$prefix \
 		    ../breakdancer
                 ;;
@@ -144,6 +154,17 @@ function main()
 		export PATH=.:$HOME/bin/intel:$PATH
 		echo " Run make"
 		eval "$args" 
+		exit
+		;;
+
+	    a2so)
+		export PATH=.:$HOME/bin/intel:$PATH
+		cd $SUITESPARSE_LIB
+		icc -shared -o libsuitesparse.so  \
+		    -Wl,--whole-archive \
+		    libamd.a \
+		    -Wl,--no-whole-archive \
+		    -L$MKL_ROOT/lib/intel64 -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -lpthread -lrt
 		exit
 		;;
 	    
