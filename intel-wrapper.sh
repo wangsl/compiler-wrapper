@@ -1,8 +1,8 @@
 #!/bin/bash 
 
-# $Id$
+# $Id: intel-wrapper.sh 45 2014-04-20 16:18:09Z wangsl2001@gmail.com $
 
-svn_id="$Id$"
+svn_id="$Id: intel-wrapper.sh 45 2014-04-20 16:18:09Z wangsl2001@gmail.com $"
 
 shopt -s expand_aliases
 
@@ -314,7 +314,7 @@ function set_compiler()
 	    
 	    mpi*)
 		compiler_name=$Input_compiler_name
-		die " No idea where are GNU MPI compilers"
+		#die " No idea where are GNU MPI compilers"
 		path=$(_set_compiler_path $Pre_defined_gnu_mpi_bin_path $GNU_MPI_BIN_PATH)
 		if [ "$Input_compiler_name" == "mpif77" -o "$Input_compiler_name" == "mpif90" ]; then
 		    Fortran_compiler=1
@@ -455,7 +455,9 @@ function check_compile_or_link()
     
     local arg=
     for arg in $args; do
-	if [ "$arg" == "-c" ]; then 
+	if [ "$arg" == "-c" -o \
+	    "$arg" == "--device-c" -o "$arg" == "-dc" -o \
+	    "$arg" == "--device-link" -o "$arg" == "-dlink" ]; then 
 	    compile=1;
 	elif [ "$arg" == "-o" ]; then 
 	    link=1; 
@@ -637,7 +639,7 @@ Pre_defined_invalid_flags_for_nvcc_compilers=()
 
 Pre_defined_no_echo_flags=(
     -V --version -logo -dumpmachine -dumpversion
-    -E -EP -P -C #-help -v
+    -E -EP -P -C -v #-help -v
 )
 
 Pre_defined_no_echo_regular_expressions=(
