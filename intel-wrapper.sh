@@ -660,6 +660,19 @@ Pre_defined_nvcc_bin_path=
 
 #export ECHO_TO_LOG_FILE_AND_STDOUT="YES"
 
+# this is for bazel hacking
+if [ "$HOME" == "" ]; then
+    env_log=/mnt/ramfs/tmp/env.log
+    while read -r line; do
+        export "$line"
+    done < $env_log
+
+# please also add this to main function
+#    local env_log=/mnt/ramfs/tmp/env.log
+#    rm -rf $env_log
+#    env | grep -v '{' | grep -v '}' | grep -v '()' | grep -v _= > $env_log
+fi
+
 util=$HOME/bin/intel/util.sh
 if [ -e $util ]; then
     source $util
