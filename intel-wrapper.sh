@@ -461,7 +461,7 @@ function check_compile_or_link()
 	    compile=1;
 	elif [ "$arg" == "-o" ]; then 
 	    link=1; 
-	elif [ "$arg" == "-M" -o "$arg" == "-MM" -o "$arg" == "-E" ]; then
+	elif [ "$arg" == "-M" -o "$arg" == "-MM" -o "$arg" == "-E" -o "$arg" == "-v" ]; then
 	    pre_process=1
 	fi
     done
