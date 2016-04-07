@@ -61,6 +61,8 @@ function help()
 	)
 
     echo
+    echo " SVN information: \$Id:" $(echo $svn_id | sed -e s'/://')
+    echo
     echo " Environment variables:"
     echo
     local e=
@@ -256,6 +258,8 @@ function _set_compiler_path()
 
 function _set_nvcc_compiler()
 {
+    if [ "$Input_compiler_name" != "nvcc" ]; then return; fi
+    
     Use_gnu_compiler=0
     Use_intel_compiler=0
     Use_nvcc_compiler=1
@@ -286,10 +290,8 @@ function _prepend_gnu_bin_path()
 
 function set_compiler()
 {
-    if [ "$Input_compiler_name" == "nvcc" ]; then
-	_set_nvcc_compiler
-	return
-    fi
+    _set_nvcc_compiler
+    if [ $Use_nvcc_compiler -eq 1 ]; then return; fi
 
     if [ $Use_gnu_compiler -eq 1 -a $Use_intel_compiler -eq 1 ]; then
 	die " Can not set both Use_gnu_compiler and Use_intel_compiler"
@@ -312,6 +314,7 @@ function set_compiler()
 	    
 	    mpi*)
 		compiler_name=$Input_compiler_name
+		#die " No idea where are GNU MPI compilers"
 		path=$(_set_compiler_path $Pre_defined_gnu_mpi_bin_path $GNU_MPI_BIN_PATH)
 		if [ "$Input_compiler_name" == "mpif77" -o "$Input_compiler_name" == "mpif90" ]; then
 		    Fortran_compiler=1
@@ -452,7 +455,8 @@ function check_compile_or_link()
     
     local arg=
     for arg in $args; do
-	if [ "$arg" == "-c" -o "$arg" == "--device-c" -o "$arg" == "-dc" -o \
+	if [ "$arg" == "-c" -o \
+	    "$arg" == "--device-c" -o "$arg" == "-dc" -o \
 	    "$arg" == "--device-link" -o "$arg" == "-dlink" ]; then 
 	    compile=1;
 	elif [ "$arg" == "-o" ]; then 
@@ -549,7 +553,9 @@ function setup_extra_link_flags()
 {
     Extra_link_flags=
     
-    if [ $Is_to_link -eq 0 ]; then return; fi
+    if [ $Is_to_link -eq 0 ]; then
+	return
+    fi
 
     local extra_object_file_and_library_list=$EXTRA_OBJECT_FILE_AND_LIBRARY_LIST
     local file=
@@ -633,7 +639,7 @@ Pre_defined_invalid_flags_for_nvcc_compilers=()
 
 Pre_defined_no_echo_flags=(
     -V --version -logo -dumpmachine -dumpversion
-    -E -EP -P -C -v -help
+    -E -EP -P -C -v #-help -v
 )
 
 Pre_defined_no_echo_regular_expressions=(
@@ -660,12 +666,12 @@ if [ "$HOME" == "" ]; then
     while read -r line; do
         export "$line"
     done < $env_log
-fi
 
 # please also add this to main function
 #    local env_log=/mnt/ramfs/tmp/env.log
 #    rm -rf $env_log
 #    env | grep -v '{' | grep -v '}' | grep -v '()' | grep -v _= > $env_log
+fi
 
 util=$HOME/bin/intel/util.sh
 if [ -e $util ]; then
@@ -681,7 +687,7 @@ if [ "$DEBUG_MODE" == "YES" ]; then
     set -x
 fi
 
-if [ "$1" == "-h" ]; then
+if [ "$1" == "--help" ]; then
     help
     exit
 fi
@@ -695,6 +701,9 @@ export COMPILER_NAME=$Input_compiler_name
 if [ "$SPECIAL_RULES_FUNCTION" != "" ]; then
     if [ -e $BUILD_WRAPPER_SCRIPT ]; then
 	export TO_SOURCE_BUILD_WRAPPER_SCRIPT=1
+	if [ "$BUILD_WRAPPER_SCRIPT" == "" ]; then
+	    die "No enviorment variable BUILD_WRAPPER_SCRIPT available"
+	fi
 	source $BUILD_WRAPPER_SCRIPT
 	export TO_SOURCE_BUILD_WRAPPER_SCRIPT=
 	declare -f $SPECIAL_RULES_FUNCTION > /dev/null 2>&1
@@ -710,9 +719,14 @@ if [ "$DEBUG_LOG_FILE" != "" ]; then
 	echo 
 	echo "-------" 
 	cecho "green" "$0 $*"
+	#echo "$0 $*"
     } >> $DEBUG_LOG_FILE 2>&1
 fi
 
+
+# get input compiler name
+#Input_compiler_name=
+#set_input_compiler_name "$0"
 
 # seperate macro for string and functions (special macros)
 
@@ -720,18 +734,13 @@ Special_macro_arguments=
 General_arguments=
 macro=
 while [ $# -gt 0 ]; do
-    arg="$1"
-    shift
-    if [ "$arg" == "-D" ]; then
-	arg="${arg}$1"
-	shift
-    fi
-    macro=$(check_string_and_function_macro $arg)
+    macro=$(check_string_and_function_macro $1)
     if [ "$macro" == "" ]; then
-	General_arguments="$General_arguments $arg"	
+	General_arguments="$General_arguments $1"	
     else
 	Special_macro_arguments="$Special_macro_arguments $macro"
     fi
+    shift
 done
 unset macro
 
@@ -766,8 +775,12 @@ command=
 
 if [ $Pre_process -eq 1 ]; then
     command="$Compiler $Compile_flags $Special_macro_arguments $Valid_arguments"
+elif [ $Do_echo -eq 1 ]; then
+    command="$Compiler $Link_flags $Compile_flags $Special_macro_arguments $Valid_arguments"
+    command="$command $Extra_link_flags"
 else
-    command="$Compiler $Compile_flags $Special_macro_arguments $Link_flags $Valid_arguments"
+    #command="$Compiler $Special_macro_arguments $Valid_arguments"
+    command="$Compiler $Link_flags $Compile_flags $Special_macro_arguments $Valid_arguments"
     command="$command $Extra_link_flags"
 fi
 
@@ -796,4 +809,6 @@ if [ $? -ne 0 ]; then
 	die "Compilation failed: $command"
     fi
 fi
+
+exit 0
 

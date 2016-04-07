@@ -84,20 +84,22 @@ function main()
     export OPTIMIZATION_FLAGS_FOR_GNU_COMPILERS="-O3 -fPIC -fopenmp -msse4.2 -mno-avx"
     
     export INVALID_FLAGS_FOR_INTEL_COMPILERS="-O -O0 -O1 -O2 -g -lm -xhost -fast"
-    export OPTIMIZATION_FLAGS_FOR_INTEL_COMPILERS="-O3 -fPIC -unroll -ip -axavx -xsse4.2 -openmp -vec-report -par-report -openmp-report -Wno-deprecated"
-    export OPTIMIZATION_FLAGS_FOR_INTEL_FORTRAN_COMPILERS="-O3 -fPIC -unroll -ip -axavx -xsse4.2 -openmp -vec-report -par-report -openmp-report"
+    export OPTIMIZATION_FLAGS_FOR_INTEL_COMPILERS="-unroll -ip -axavx -xsse4.2 -openmp -vec-report -par-report -openmp-report -Wno-deprecated"
+    export OPTIMIZATION_FLAGS_FOR_INTEL_FORTRAN_COMPILERS="-unroll -ip -axavx -xsse4.2 -openmp -vec-report -par-report -openmp-report"
+
+    export OPTIMIZATION_FLAGS="-O3 -fPIC"
     
-    #export CPPFLAGS=$(for inc in $(env | grep _INC= | cut -d= -f2); do echo '-I'$inc; done | xargs)
-    #export LDFLAGS=$(for lib in $(env | grep _LIB= | cut -d= -f2); do echo '-L'$lib; done | xargs)
+    export CPPFLAGS=$(for inc in $(env | grep _INC= | cut -d= -f2); do echo '-I'$inc; done | xargs)
+    export LDFLAGS=$(for lib in $(env | grep _LIB= | cut -d= -f2); do echo '-L'$lib; done | xargs)
     
-    #prepend_to_env_variable INCLUDE_FLAGS "$CPPFLAGS"
-    #prepend_to_env_variable LINK_FLAGS "$LDFLAGS"
+    prepend_to_env_variable INCLUDE_FLAGS "$CPPFLAGS"
+    prepend_to_env_variable LINK_FLAGS "$LDFLAGS"
     
     export LINK_FLAGS_FOR_INTEL_COMPILERS="-shared-intel"
     export EXTRA_LINK_FLAGS="$(LD_LIBRARY_PATH_to_rpath)"
-
-    export INCLUDE_FLAGS=
-    export LINK_FLAGS=
+    
+    #export INCLUDE_FLAGS=
+    #export LINK_FLAGS=
 
     if [ "$DEBUG_LOG_FILE" != "" ]; then
 	rm -rf $DEBUG_LOG_FILE
@@ -121,7 +123,7 @@ function main()
 	    
 	    configure|conf)
 		echo " Run configuration ..."
-		#export PATH=.:$HOME/bin/intel:$PATH
+		export PATH=.:$HOME/bin/intel:$PATH
 		
 		if [ "$DEFAULT_COMPILER" != "GNU" ]; then
 		    export CC=icc
