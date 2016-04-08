@@ -95,8 +95,8 @@ function main()
     export CPPFLAGS=$(for inc in $(env | grep _INC= | cut -d= -f2); do echo '-I'$inc; done | xargs)
     export LDFLAGS=$(for lib in $(env | grep _LIB= | cut -d= -f2); do echo '-L'$lib; done | xargs)
     
-    #prepend_to_env_variable INCLUDE_FLAGS "-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
-    #prepend_to_env_variable LINK_FLAGS "$LDFLAGS"
+    prepend_to_env_variable INCLUDE_FLAGS "$CPPFLAGS"
+    prepend_to_env_variable LINK_FLAGS "$LDFLAGS"
 
     export LINK_FLAGS_FOR_INTEL_COMPILERS="-shared-intel"
     export EXTRA_LINK_FLAGS="$(LD_LIBRARY_PATH_to_rpath)"
@@ -111,8 +111,8 @@ function main()
 
     local prefix=
     if [ "$USER" == "wang" ]; then
-	#prefix=$(readlink -e ../local)
-	prefix=/share/apps/cutadapt/1.8.1/intel
+	prefix=$(readlink -e ../local)
+	#prefix=/share/apps/cutadapt/1.8.1/intel
 	export PYTHONPATH=$prefix/lib/python2.7/site-packages:$PYTHONPATH
 	mkdir -p $prefix/lib/python2.7/site-packages
 	prefix="--prefix=$prefix"

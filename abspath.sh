@@ -2,6 +2,16 @@
 
 # $Id$
 
+if [ $# -eq 0 ]; then
+    pwd
+else
+    for x in $*; do 
+	readlink -e $x
+    done 
+fi
+
+exit
+
 function absolute_path()
 {
     if [ ! -e $1 ]; then
