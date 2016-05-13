@@ -672,7 +672,7 @@ fi
 #    rm -rf $env_log
 #    env | grep -v '{' | grep -v '}' | grep -v '()' | grep -v _= > $env_log
 
-util=$HOME/bin/intel/util.sh
+util=$MY_INTEL_PATH/util.sh
 if [ -e $util ]; then
     source $util
 else

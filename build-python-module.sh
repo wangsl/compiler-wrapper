@@ -71,7 +71,9 @@ function main()
     export LD_LIBRARY_PATH=
     module load python/intel/2.7.6
 
-    local util=$HOME/bin/intel/util.sh
+    export MY_INTEL_PATH=$HOME/bin/intel
+    
+    local util=$MY_INTEL_PATH/util.sh
     if [ -e $util ]; then
 	source $util
     fi
@@ -126,7 +128,7 @@ function main()
 	    
 	    configure|conf)
 		echo " Run configuration ..."
-		export PATH=.:$HOME/bin/intel:$PATH
+		export PATH=.:$MY_INTEL_PATH:$PATH
 		if [ -e configure.py ]; then
 		    python configure.py
 		else
@@ -135,13 +137,13 @@ function main()
 		;;
 	    
 	    install)
-		export PATH=.:$HOME/bin/intel:$PATH
+		export PATH=.:$MY_INTEL_PATH:$PATH
 		echo " Run install"
 		python setup.py install $prefix
 		;;
 
 	    pip)
-		export PATH=.:$HOME/bin/intel:$PATH
+		export PATH=.:$MY_INTEL_PATH:$PATH
 		export PYTHONUSERBASE=/home/wang/spacy-20151113/tmp 
 		pip install --user --verbose --no-cache-dir spacy
 		exit
@@ -154,7 +156,7 @@ function main()
 	    
 	    cmake)
 		module load cmake/intel/2.8.8
-		export PATH=.:$HOME/bin/intel:$PATH
+		export PATH=.:$MY_INTEL_PATH:$PATH
 		
                 export CC=icc
                 export CXX=icpc
@@ -165,7 +167,7 @@ function main()
                 ;;
 	    
 	    make)
-		export PATH=.:$HOME/bin/intel:$PATH
+		export PATH=.:$MY_INTEL_PATH:$PATH
 		echo " Run make"
 		eval "$args" 
 		exit

@@ -65,8 +65,10 @@ function main()
     module purge
     export LD_LIBRARY_PATH=
     module load intel/14.0.2
+
+    export MY_INTEL_PATH=$HOME/bin/intel
     
-    local util=$HOME/bin/intel/util.sh
+    local util=$MY_INTEL_PATH/util.sh
     if [ -e $util ]; then
 	source $util
     fi
@@ -83,7 +85,7 @@ function main()
     export INVALID_FLAGS_FOR_GNU_COMPILERS="-O -O0 -O1 -O2 -g"
     export OPTIMIZATION_FLAGS_FOR_GNU_COMPILERS="-O3 -fPIC -fopenmp -msse4.2 -mno-avx"
     
-    export INVALID_FLAGS_FOR_INTEL_COMPILERS="-O -O0 -O1 -O2 -g -lm -xhost -fast"
+    export INVALID_FLAGS_FOR_INTEL_COMPILERS="-O -O0 -O1 -O2 -O3 -g -lm -xhost -fast"
     export OPTIMIZATION_FLAGS_FOR_INTEL_COMPILERS="-unroll -ip -axavx -xsse4.2 -openmp -vec-report -par-report -openmp-report -Wno-deprecated"
     export OPTIMIZATION_FLAGS_FOR_INTEL_FORTRAN_COMPILERS="-unroll -ip -axavx -xsse4.2 -openmp -vec-report -par-report -openmp-report"
 
@@ -123,7 +125,7 @@ function main()
 	    
 	    configure|conf)
 		echo " Run configuration ..."
-		export PATH=.:$HOME/bin/intel:$PATH
+		export PATH=.:$MY_INTEL_PATH:$PATH
 		
 		if [ "$DEFAULT_COMPILER" != "GNU" ]; then
 		    export CC=icc
@@ -138,7 +140,7 @@ function main()
 	    
 	    cmake)
 		module load cmake/intel/2.8.12.2
-		export PATH=.:$HOME/bin/intel:$PATH
+		export PATH=.:$MY_INTEL_PATH:$PATH
 
 		export CMAKE_INCLUDE_PATH=$(env | grep _INC= | cut -d= -f2 | xargs | sed -e 's/ /:/g')
 		export CMAKE_LIBRARY_PATH=$(env | grep _LIB= | cut -d= -f2 | xargs | sed -e 's/ /:/g')
@@ -156,7 +158,7 @@ function main()
                 ;;
 	    
 	    make)
-		export PATH=.:$HOME/bin/intel:$PATH
+		export PATH=.:$MY_INTEL_PATH:$PATH
 		echo " Run make"
 		eval "$args" 
 		exit
