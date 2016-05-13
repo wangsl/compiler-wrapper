@@ -79,6 +79,6 @@ function _warn_()
 function sort_and_uniq()
 {
     if [ "$*" != "" ]; then 
-	echo "$*" | sed -e 's/ /\n/g' | /bin/sort -u
+	echo "$*" | tr ' ' '\n' | sort -u
     fi
 }

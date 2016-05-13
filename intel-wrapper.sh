@@ -1,5 +1,7 @@
 #!/bin/bash 
 
+# GitHub: git@github.com:wangsl/compiler-wrapper.git
+
 # $Id: intel-wrapper.sh 45 2014-04-20 16:18:09Z wangsl2001@gmail.com $
 
 svn_id="$Id: intel-wrapper.sh 45 2014-04-20 16:18:09Z wangsl2001@gmail.com $"
@@ -59,7 +61,7 @@ function help()
 	INVALID_FLAGS_FOR_NVCC_COMPILERS
 	OPTIMIZATION_FLAGS_FOR_NVCC_COMPILERS
 	)
-
+    
     echo
     echo " Environment variables:"
     echo
@@ -105,6 +107,8 @@ function check_string_and_function_macro()
 	macro_type=${_macro_non_string}	
     fi
     
+## It seems we do not need FUNCTION_MACROS, STRING_MACROS and NON_STRING_MACROS
+
     local function_macros=$(sort_and_uniq $FUNCTION_MACROS)
     local macro=
     for macro in $function_macros; do
@@ -621,6 +625,7 @@ Pre_defined_invalid_flags_for_intel_compilers=(
     -Wno-long-long -Wno-pointer-sign -Wno-sign-compare 
     -Wno-unused-parameter -Wparentheses -Wredundant-decls 
     -Wsign-compare -Wswitch -fopenmp -ffast-math -xhost
+    -Wno-unused-result -Wno-unused-value
     )
 
 Pre_defined_invalid_flags_for_gnu_compilers=(
@@ -654,7 +659,7 @@ Pre_defined_nvcc_bin_path=
 
 #export ECHO_TO_LOG_FILE_AND_STDOUT="YES"
 
-# this is for bazel hacking
+# this is for bazel hacking or scosn
 if [ "$HOME" == "" ]; then
     env_log=/mnt/ramfs/tmp/env.log
     while read -r line; do
