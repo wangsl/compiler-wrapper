@@ -12,6 +12,7 @@ if [ "$MAKE_BIN_PATH" != "" ]; then
     make=$MAKE_BIN_PATH/make
 fi
 
-$make $args "$@"
+$make "$@" $args
+
 
 

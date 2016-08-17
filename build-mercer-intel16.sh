@@ -132,8 +132,8 @@ function main()
                     export CXX=icpc
                     export F77=ifort
                     export FC=ifort
-		    export CPP="icc -EP"
-		    export CXXFLAG="icpc -EP"
+		    export CPP="icc -E"
+		    export CXXCPP="icpc -E"
 		fi
 		
 		./configure --build=x86_64-centos-linux \
