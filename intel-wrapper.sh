@@ -662,9 +662,11 @@ Pre_defined_nvcc_bin_path=
 # this is for bazel hacking or scosn
 if [ "$HOME" == "" ]; then
     env_log=/mnt/ramfs/tmp/env.log
-    while read -r line; do
-        export "$line"
-    done < $env_log
+    if [ -e $env_log ]; then
+	while read -r line; do
+            export "$line"
+	done < $env_log
+    fi
 fi
 
 # please also add this to main function
@@ -727,7 +729,9 @@ macro=
 while [ $# -gt 0 ]; do
     arg="$1"
     shift
-    if [ "$arg" == "-D" ]; then
+    if [ "$arg" == "-D" -o \
+	"$arg" == "-L" -o "$arg" == "-l" -o \
+	"$arg" == "-I" ]; then
 	arg="${arg}$1"
 	shift
     fi
