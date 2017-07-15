@@ -661,7 +661,7 @@ Pre_defined_nvcc_bin_path=
 
 # this is for bazel hacking or scosn
 if [ "$HOME" == "" ]; then
-    env_log=/mnt/ramfs/tmp/env.log
+    env_log=/state/partition1/wang/env.log
     if [ -e $env_log ]; then
 	while read -r line; do
             export "$line"

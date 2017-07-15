@@ -49,6 +49,10 @@
 #export F77=ifort
 #export FFLAGS="$CFLAGS"
 
+#grep "module load" build-caffe.sh | grep -v "#grep" | awk '{printf "%s(\"%s\")\n", $2, $3}'
+
+#set -e
+
 alias die='_error_exit_ "Error in file $0 at line $LINENO\n"'
 
 function special_rules_for_Cython()
@@ -76,7 +80,6 @@ function main()
     module use /share/apps/modulefiles
     module purge
     export LD_LIBRARY_PATH=
-    #module load intel/17.0.1
     module load python/intel/2.7.12
     
     export MY_INTEL_PATH=/home/wang/bin/intel
@@ -96,7 +99,7 @@ function main()
     #export INTEL_MPI_BIN_PATH=$(dirname $(which mpicc))
     
     export INVALID_FLAGS_FOR_GNU_COMPILERS="-O -O0 -O1 -O2 -O3 -g -g0 -fp-model strict -Olimit 1500 -I$INTEL_INC -I$MKL_INC"
-    export OPTIMIZATION_FLAGS_FOR_GNU_COMPILERS="-fPIC -fopenmp -mavx2"
+    export OPTIMIZATION_FLAGS_FOR_GNU_COMPILERS="-fPIC -fopenmp -mavx -mno-avx2"
     
     export INVALID_FLAGS_FOR_INTEL_COMPILERS="-O -O0 -O1 -O2 -O3 -g -g0 -lm -xhost -fast -Olimit 1500"
 
@@ -167,7 +170,14 @@ function main()
 		export PATH=.:$MY_INTEL_PATH:$PATH
                 python setup.py install $prefix
                 ;;
-            
+
+	    pip)
+                export PATH=.:$MY_INTEL_PATH:$PATH
+                export PYTHONUSERBASE=/home/wang/spacy-20151113/tmp 
+                pip install --user --verbose --no-cache-dir spacy
+                exit
+                ;;
+	                 
             test)
                 echo " Run test"
 		export PATH=.:$MY_INTEL_PATH:$PATH
