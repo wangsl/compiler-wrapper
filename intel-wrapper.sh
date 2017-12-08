@@ -322,7 +322,7 @@ function set_compiler()
 		fi
 		;;
 
-	    icpc|g++|c++|pgc++)
+	    icpc|g++|c++|pgc++|clang++)
 		compiler_name=g++
 		;;
 
@@ -355,7 +355,7 @@ function set_compiler()
 		fi
 		;;
 
-	    icpc|g++|c++|pgc++)
+	    icpc|g++|c++|pgc++|clang++)
 		compiler_name=icpc
 		;;
 
@@ -626,12 +626,14 @@ Pre_defined_invalid_flags_for_intel_compilers=(
     -Wno-unused-parameter -Wparentheses -Wredundant-decls 
     -Wsign-compare -Wswitch -fopenmp -ffast-math -xhost
     -Wno-unused-result -Wno-unused-value
+    -march=native
     )
 
 Pre_defined_invalid_flags_for_gnu_compilers=(
     -132 -Zp8 -vec-report -par-report -shared-intel 
     -xO -axO -xP -axP -ip -xOP -axOP -xSSE3 -axSSE3 
     -align -Wno-deprecated -openmp -openmp-report -xhost
+    -march=native
 )
 
 Pre_defined_invalid_flags_for_nvcc_compilers=()
@@ -712,6 +714,10 @@ if [ "$SPECIAL_RULES_FUNCTION" != "" ]; then
     fi
 fi
 
+if [ "$COMPILER_NAME" != "$Input_compiler_name" ]; then
+    Input_compiler_name=$COMPILER_NAME
+fi
+
 if [ "$DEBUG_LOG_FILE" != "" ]; then
     {
 	echo 
@@ -719,7 +725,6 @@ if [ "$DEBUG_LOG_FILE" != "" ]; then
 	cecho "green" "$0 $*"
     } >> $DEBUG_LOG_FILE 2>&1
 fi
-
 
 # seperate macro for string and functions (special macros)
 
