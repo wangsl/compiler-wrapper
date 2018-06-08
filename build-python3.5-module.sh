@@ -51,31 +51,26 @@
 
 #grep "module load" build-caffe.sh | grep -v "#grep" | awk '{printf "%s(\"%s\")\n", $2, $3}'
 
-set -e
+#set -e
 
 alias die='_error_exit_ "Error in file $0 at line $LINENO\n"'
 
-function setup_cuda_compilers()
+function special_rules_for_Cython()
 {
-    module load cuda/9.2.88
-    local nvcc_version=$(nvcc --version | \
-			     grep "Cuda compilation tools, release" |  \
-			     awk '{print $NF}' | sed -e 's/[a-zA-Z]//g')
-    export NVCC_PATH=$MY_INTEL_PATH/cuda/${nvcc_version}/bin
+    export DEFAULT_COMPILER="GNU"
 }
 
 function special_rules()
 {
+    if [ "$SPECIAL_FUNCTION" != "" ]; then
+        $SPECIAL_FUNCTION $*
+    fi
+    
     return
     
-    if [ "$COMPILER_NAME" == "nvcc" ]; then
-	export EXTRA_LINK_FLAGS=
-        export DEFAULT_COMPILER="GNU"
-    fi
-
     local arg=
     for arg in $*; do
-	echo $arg
+	echo "$arg"
     done
 }
 
@@ -84,14 +79,11 @@ function main()
     export LMOD_DISABLE_SAME_NAME_AUTOSWAP=yes
     module use /share/apps/modulefiles
     module purge
-    export CPATH=
     export LD_LIBRARY_PATH=
-    module load intel/17.0.1
-
-    export MY_INTEL_PATH=~wang/bin/intel
-
-    #setup_cuda_compilers
-
+    module load python3/intel/3.5.3
+    
+    export MY_INTEL_PATH=/home/wang/bin/intel
+    
     local util=$MY_INTEL_PATH/util.sh
     if [ -e $util ]; then
 	source $util
@@ -105,32 +97,30 @@ function main()
     export GNU_BIN_PATH=$(dirname $(which gcc))
     export INTEL_BIN_PATH=$(dirname $(which icc))
     #export INTEL_MPI_BIN_PATH=$(dirname $(which mpicc))
-    #export NVCC_BIN_PATH=$(dirname $(which nvcc))
     
-    export INVALID_FLAGS_FOR_GNU_COMPILERS="-O -O0 -O1 -O2 -O3 -g -g0"
+    export INVALID_FLAGS_FOR_GNU_COMPILERS="-O -O0 -O1 -O2 -O3 -g -g0 -fp-model strict -Olimit 1500 -I$INTEL_INC -I$MKL_INC"
     export OPTIMIZATION_FLAGS_FOR_GNU_COMPILERS="-fPIC -fopenmp -mavx -mno-avx2"
     
-    export INVALID_FLAGS_FOR_INTEL_COMPILERS="-O -O0 -O1 -O2 -O3 -g -g0 -lm -xhost -fast"
+    export INVALID_FLAGS_FOR_INTEL_COMPILERS="-O -O0 -O1 -O2 -O3 -g -g0 -lm -xhost -fast -Olimit 1500"
 
     export OPTIMIZATION_FLAGS_FOR_INTEL_COMPILERS="-fPIC -unroll -ip -axCORE-AVX2 -qopenmp -qopt-report-stdout -qopt-report-phase=openmp"
     
-    export OPTIMIZATION_FLAGS_FOR_INTEL_FORTRAN_COMPILERS="-fPIC -unroll -ip -axCORE-AVX2 -qopenmp -qopt-report-stdout -qopt-report-phase=openmp"
-
-    #export INVALID_FLAGS_FOR_NVCC_COMPILERS="-O0 -O1 -O2 -O3 -O"
-    #export OPTIMIZATION_FLAGS_FOR_NVCC_COMPILERS="-Wno-deprecated-gpu-targets"
+    export OPTIMIZATION_FLAGS_FOR_INTEL_FORTRAN_COMPILERS="-fPIC -unroll -ip -axCORE-AVX2 -qopenmp -qopt-report-phase=openmp"
     
     export OPTIMIZATION_FLAGS="-O3"
     
     export CPPFLAGS=$(for inc in $(env -u INTEL_INC -u MKL_INC | grep _INC= | cut -d= -f2); do echo '-I'$inc; done | xargs)
     export LDFLAGS=$(for lib in $(env | grep _LIB= | cut -d= -f2); do echo '-L'$lib; done | xargs)
-
+    
     prepend_to_env_variable INCLUDE_FLAGS "$CPPFLAGS"
     prepend_to_env_variable LINK_FLAGS "$LDFLAGS"
-    
-    export INCLUDE_FLAGS_FOR_INTEL_COMPILERS="-I$INTEL_INC -I$MKL_INC"
+
+    prepend_to_env_variable INTEL_INCLUDE_FLAGS "-I$INTEL_INC -I$MKL_INC"
     
     export LINK_FLAGS_FOR_INTEL_COMPILERS="-shared-intel"
     export EXTRA_LINK_FLAGS="$(LD_LIBRARY_PATH_to_rpath)"
+
+    prepend_to_env_variable EXTRA_LINK_FLAGS "-L$PYTHON3_LIB -lpython3"
     
     if [ "$DEBUG_LOG_FILE" != "" ]; then
 	rm -rf $DEBUG_LOG_FILE
@@ -138,16 +128,32 @@ function main()
     
     export LD_RUN_PATH=$LD_LIBRARY_PATH
     
-    local prefix=
-    if [ "$prefix" == "" ]; then
-	local dir=$(readlink -e $(dirname $0))
-	dir="$dir/local"
-	if [ -d $dir ]; then prefix=$dir; fi
+    local prefix= 
+    if [ "$USER" == "wang" ]; then
+        #prefix=$(readlink -e ../local)
+	prefix=/share/apps/gensim/1.0.1/intel/python3.5
+	export PYTHONPATH=$prefix/lib/python3.5/site-packages:$PYTHONPATH
+        mkdir -p $prefix/lib/python3.5/site-packages
+        prefix="--prefix=$prefix"
     fi
-    if [ "$prefix" == "" ]; then
-        die "$0: no prefix defined"
-    fi
+
+    export PACKAGE_NAME=$(pwd | awk -F/ '{print $NF}' | cut -d- -f1)
+    echo $PACKAGE_NAME
     
+    local special_function=special_rules_for_$PACKAGE_NAME
+    declare -f $special_function > /dev/null 2>&1
+    if [[ $? == 0 ]]; then
+        echo "Special function: $special_function"
+        $special_function
+        export EXTRA_LINK_FLAGS="$(LD_LIBRARY_PATH_to_rpath)"
+        export LD_RUN_PATH=$LD_LIBRARY_PATH
+        export SPECIAL_FUNCTION=$special_function
+    fi
+
+    #export N_MAKE_THREADS=60
+
+    #export DEFAULT_COMPILER="GNU"
+
     local args=$*
     local arg=
     for arg in $args; do
@@ -155,55 +161,36 @@ function main()
 	case $arg in
 	    
 	    configure|conf)
-		echo " Run configuration ..."
-		export PATH=.:$MY_INTEL_PATH:$PATH
-		
-		if [ "$DEFAULT_COMPILER" != "GNU" ]; then
-		    export CC=icc
-                    export CXX=icpc
-                    export FC=ifort
-		    export F77=ifort
-		fi
-		
-		./configure --build=x86_64-centos-linux \
-			    --prefix=$prefix
-		;;
-	    
-	    cmake)
-		module load cmake/intel/3.7.1
-		export PATH=.:$MY_INTEL_PATH:$PATH
-
-		export CMAKE_INCLUDE_PATH=$(env | grep _INC= | cut -d= -f2 | xargs | sed -e 's/ /:/g')
-		export CMAKE_LIBRARY_PATH=$(env | grep _LIB= | cut -d= -f2 | xargs | sed -e 's/ /:/g')
-		
-                export CC=icc
-                export CXX=icpc
-		cmake \
-		    -DCMAKE_BUILD_TYPE=release \
-                    -DBUILD_SHARED_LIBS::BOOL=ON \
-                    -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-                    -DCMAKE_SKIP_RPATH:BOOL=ON \
-		    -DCMAKE_INSTALL_PREFIX:PATH=$prefix \
-		    ../breakdancer
+                echo " Run configuration ..."
+                export PATH=.:$MY_INTEL_PATH:$PATH
+                python3 setup.py build 
                 ;;
 	    
-	    make)
+            install)
+                echo " Run install"
 		export PATH=.:$MY_INTEL_PATH:$PATH
-		echo " Run make"
-		eval "$args" 
-		exit
-		;;
+                python3 setup.py install $prefix
+                ;;
 
-	    a2so)
-		export PATH=.:$HOME/bin/intel:$PATH
-		cd $SUITESPARSE_LIB
-		icc -shared -o libsuitesparse.so  \
-		    -Wl,--whole-archive \
-		    libamd.a \
-		    -Wl,--no-whole-archive \
-		    -L$MKL_ROOT/lib/intel64 -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -lpthread -lrt
-		exit
-		;;
+	    pip)
+                export PATH=.:$MY_INTEL_PATH:$PATH
+                export PYTHONUSERBASE=/home/wang/spacy-20151113/tmp 
+                pip3 install --user --verbose --no-cache-dir spacy
+                exit
+                ;;
+	                 
+            test)
+                echo " Run test"
+		export PATH=.:$MY_INTEL_PATH:$PATH
+                python3 setup.py test
+                ;;
+            
+            make)
+		export PATH=.:$MY_INTEL_PATH:$PATH
+                echo " Run make"
+		eval "$args" 
+                exit
+                ;;
 	    
 	    *)
 		die " Usage: $0 <argument>: configure make"
